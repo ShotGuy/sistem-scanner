@@ -57,6 +57,7 @@ const state = {
   isScanning: false,
   berThreshold: 0.22, // Batas aman BER (di bawah ini dianggap ASLI)
   nccThreshold: 0.65, // Batas aman NCC (di atas ini dianggap ASLI)
+  entropyThreshold: 0.80, // Batas aman selisih entropi (di bawah ini dianggap ASLI)
 };
 
 // Elemen DOM
@@ -89,6 +90,7 @@ const el = {
   valQRText: document.getElementById('val-qr-text'),
   valBER: document.getElementById('val-ber'),
   valNCC: document.getElementById('val-ncc'),
+  valEntropyDiff: document.getElementById('val-entropy-diff'),
   valStatus: document.getElementById('val-status'),
   
   // Sliders
@@ -96,6 +98,8 @@ const el = {
   valSliderBER: document.getElementById('val-slider-ber'),
   sliderNCC: document.getElementById('slider-ncc'),
   valSliderNCC: document.getElementById('val-slider-ncc'),
+  sliderEntropy: document.getElementById('slider-entropy'),
+  valSliderEntropy: document.getElementById('val-slider-entropy'),
 };
 
 // Deteksi Kesiapan OpenCV.js
@@ -223,6 +227,12 @@ el.sliderNCC.addEventListener('input', (e) => {
   state.nccThreshold = parseFloat(e.target.value);
   el.valSliderNCC.textContent = state.nccThreshold.toFixed(2);
 });
+
+el.sliderEntropy.addEventListener('input', (e) => {
+  state.entropyThreshold = parseFloat(e.target.value);
+  el.valSliderEntropy.textContent = state.entropyThreshold.toFixed(2);
+});
+
 
 // Mengaktifkan kamera video
 el.btnStartCamera.addEventListener('click', startCamera);
@@ -366,17 +376,24 @@ async function processVerification(srcCanvas, rawQRData) {
   // Gambar CDP Original ke kanvas pembanding
   drawOriginalCDPToCanvas(originalBits, el.canvasCDPOrig);
   
-  // 5. Hitung Metrik Kemiripan (BER & NCC)
+  // 5. Hitung Metrik Kemiripan (BER, NCC, dan Shannon Entropy)
   const ber = calculateBER(originalBits, el.canvasCDPScan);
   const ncc = calculateNCC(originalBits, el.canvasCDPScan);
+  
+  const entropyOrig = calculateShannonEntropy(el.canvasCDPOrig);
+  const entropyScan = calculateShannonEntropy(el.canvasCDPScan);
+  const entropyDiff = Math.abs(entropyOrig - entropyScan);
   
   // Tampilkan nilai metrik
   el.valBER.textContent = `${(ber * 100).toFixed(2)}%`;
   el.valNCC.textContent = ncc.toFixed(3);
+  el.valEntropyDiff.textContent = entropyDiff.toFixed(3);
   
   // 6. Keputusan Final Keaslian
-  // Syarat Asli: BER di bawah threshold DAN NCC di atas threshold
-  const isOriginal = (ber <= state.berThreshold) && (ncc >= state.nccThreshold);
+  // Syarat Asli: BER di bawah threshold, NCC di atas threshold, dan Selisih Entropi di bawah threshold
+  const isOriginal = (ber <= state.berThreshold) && 
+                     (ncc >= state.nccThreshold) && 
+                     (entropyDiff <= state.entropyThreshold);
   
   if (isOriginal) {
     el.valStatus.textContent = "ASLI (ORIGINAL DRUG)";

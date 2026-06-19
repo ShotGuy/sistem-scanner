@@ -142,6 +142,12 @@
               <span><span id="val-slider-ncc">0.65</span></span>
             </div>
             <input type="range" id="slider-ncc" class="slider-control" min="0.30" max="0.95" step="0.01" value="0.65">
+
+            <div class="slider-header" style="margin-top: 1rem;">
+              <span>Batas Selisih Entropi (Maks)</span>
+              <span><span id="val-slider-entropy">0.80</span></span>
+            </div>
+            <input type="range" id="slider-entropy" class="slider-control" min="0.10" max="3.00" step="0.05" value="0.80">
           </div>
         </div>
 
@@ -169,15 +175,19 @@
             </div>
           </div>
 
-          <!-- Metrik Angka -->
-          <div class="metrics-grid">
+          <!-- Metrik Angka (3 Kolom) -->
+          <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr);">
             <div class="metric-card">
               <div class="metric-label">Bit Error Rate (BER)</div>
               <div id="val-ber" class="metric-value">-</div>
             </div>
             <div class="metric-card">
-              <div class="metric-label">Korelasi Citra (NCC)</div>
+              <div class="metric-label">Korelasi (NCC)</div>
               <div id="val-ncc" class="metric-value">-</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Selisih Entropi (&Delta;H)</div>
+              <div id="val-entropy-diff" class="metric-value">-</div>
             </div>
           </div>
 

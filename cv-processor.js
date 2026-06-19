@@ -332,3 +332,38 @@ function drawOriginalCDPToCanvas(originalBits, canvas) {
   }
   ctx.putImageData(imgData, 0, 0);
 }
+
+/**
+ * Menghitung Shannon Entropy dari sebuah Canvas grayscale (8-bit)
+ * @param {HTMLCanvasElement} canvas - Canvas yang berisi citra CDP (126x126)
+ * @returns {number} - Nilai entropi shannon (0.0 s/d 8.0 untuk grayscale)
+ */
+function calculateShannonEntropy(canvas) {
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  const totalPixels = canvas.width * canvas.height;
+  
+  // Hitung histogram tingkat keabuan (0-255)
+  const histogram = new Array(256).fill(0);
+  for (let i = 0; i < data.length; i += 4) {
+    // Rumus konversi luminansi grayscale standar: Y = 0.299R + 0.587G + 0.114B
+    const r = data[i];
+    const g = data[i+1];
+    const b = data[i+2];
+    const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    histogram[gray]++;
+  }
+  
+  // Hitung Shannon Entropy
+  let entropy = 0;
+  for (let i = 0; i < 256; i++) {
+    if (histogram[i] > 0) {
+      const p = histogram[i] / totalPixels;
+      entropy -= p * Math.log2(p);
+    }
+  }
+  
+  return entropy;
+}
+
