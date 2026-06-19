@@ -32,13 +32,20 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Hanya melayani cache untuk aset lokal agar library CDN eksternal tetap terunduh secara real-time
-  const url = new URL(e.request.url);
-  if (ASSETS.includes(url.pathname)) {
-    e.respondWith(
-      caches.match(e.request).then((cachedResponse) => {
-        return cachedResponse || fetch(e.request);
+  // Gunakan strategi Network-First untuk mempermudah pembaruan kode riset secara real-time
+  e.respondWith(
+    fetch(e.request)
+      .then((response) => {
+        // Simpan salinan terbaru ke cache
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(e.request, clone);
+        });
+        return response;
       })
-    );
-  }
+      .catch(() => {
+        // Jika offline, ambil dari cache
+        return caches.match(e.request);
+      })
+  );
 });
