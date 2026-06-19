@@ -11,6 +11,44 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Logika Prompt Instalasi PWA Kustom
+let deferredPrompt;
+const btnInstallPWA = document.getElementById('btn-install-pwa');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Mencegah mini-infobar bawaan Chrome muncul secara default
+  e.preventDefault();
+  // Simpan event agar bisa dipicu nanti
+  deferredPrompt = e;
+  // Tampilkan tombol instalasi di UI
+  if (btnInstallPWA) {
+    btnInstallPWA.style.display = 'inline-flex';
+  }
+});
+
+if (btnInstallPWA) {
+  btnInstallPWA.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    // Tampilkan prompt instalasi bawaan browser
+    deferredPrompt.prompt();
+    // Tunggu pilihan dari user
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    // Reset prompt karena hanya bisa digunakan sekali
+    deferredPrompt = null;
+    btnInstallPWA.style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  // Sembunyikan tombol saat aplikasi telah berhasil diinstal
+  if (btnInstallPWA) {
+    btnInstallPWA.style.display = 'none';
+  }
+  console.log('PWA berhasil dipasang di perangkat.');
+});
+
+
 // State Global Aplikasi
 const state = {
   activeTab: 'generator',
