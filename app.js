@@ -350,12 +350,6 @@ async function processVerification(srcCanvas, rawQRData) {
   const nomor = parts[2].replace('NOMOR:', '');
   const dataTambahan = parts[3].replace('DATA:', '');
   
-  el.valQRText.innerHTML = `
-    <strong>Nama Obat:</strong> ${nama}<br>
-    <strong>Nomor Bets:</strong> ${nomor}<br>
-    <strong>Info Tambahan:</strong> <a href="${dataTambahan}" target="_blank">${dataTambahan}</a>
-  `;
-  
   // 2. Luruskan QR Code menggunakan OpenCV.js (Warp Perspective)
   // Menghasilkan canvas warped berukuran 462x462
   el.canvasWarped.width = 462;
@@ -383,6 +377,16 @@ async function processVerification(srcCanvas, rawQRData) {
   const entropyOrig = calculateShannonEntropy(el.canvasCDPOrig);
   const entropyScan = calculateShannonEntropy(el.canvasCDPScan);
   const entropyDiff = Math.abs(entropyOrig - entropyScan);
+
+  // Perbarui UI Informasi dengan menyertakan detail perbandingan Shannon Entropy
+  el.valQRText.innerHTML = `
+    <strong>Nama Obat:</strong> ${nama}<br>
+    <strong>Nomor Bets:</strong> ${nomor}<br>
+    <strong>Info Tambahan:</strong> <a href="${dataTambahan}" target="_blank">${dataTambahan}</a><br>
+    <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 0.5rem 0;">
+    <strong>Entropi CDP Original:</strong> ${entropyOrig.toFixed(4)} bits/symbol<br>
+    <strong>Entropi CDP Scan:</strong> ${entropyScan.toFixed(4)} bits/symbol
+  `;
   
   // Tampilkan nilai metrik
   el.valBER.textContent = `${(ber * 100).toFixed(2)}%`;
